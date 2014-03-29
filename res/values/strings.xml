@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+  <string name="app_name">Recorder</string>
+  <string name="app_version_label">Version</string>
+  <string name="app_version">0.0.2</string>
+  <string name="app_description">Audio recorder and player.</string>
+  <string name="app_credits">Allann Jones</string>
+  <string name="app_email">E-mail: allanjos@gmail.com</string>
+  <string name="app_homepage">Homepage: www.olivum.com.br</string>
+
+  <string name="action_settings">Settings</string>
+  <string name="menu_settings">Settings</string>
+  <string name="menu_about">About</string>
+
+</resources>

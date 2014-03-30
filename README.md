@@ -1,7 +1,7 @@
 Recorder
 ========
 
-A audio recorder/player for Android to take notes.
+A audio recorder/player for Android to take notes using voice.
 
 Status
 ======

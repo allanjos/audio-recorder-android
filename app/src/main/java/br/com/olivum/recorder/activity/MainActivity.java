@@ -5,22 +5,28 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -52,18 +58,15 @@ public class MainActivity extends AppCompatActivity
 
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                //        .setAction("Action", null).show();
+        floatingActionButton.setOnClickListener(view -> {
+            //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+            //        .setAction("Action", null).show();
 
-                Intent intent = new Intent(MainActivity.this, AudioNoteNewActivity.class);
+            Intent intent = new Intent(MainActivity.this, AudioNoteNewActivity.class);
 
-                startActivityForResult(intent, 1);
-            }
+            startActivityForResult(intent, 1);
         });
 
         // Drawer
@@ -119,7 +122,11 @@ public class MainActivity extends AppCompatActivity
                                 (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED);
 
         if (hasPermission) {
-            loadList();
+            Handler handler = new Handler(Looper.getMainLooper());
+
+            handler.postDelayed((Runnable) () -> {
+                loadList();
+            }, 200);
 
             return true;
         }
@@ -131,12 +138,14 @@ public class MainActivity extends AppCompatActivity
                             Manifest.permission.RECORD_AUDIO},
                     REQUEST_WRITE_STORAGE);
 
-            return true;
+            return false;
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         if (requestCode == 100) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 loadList();
@@ -197,6 +206,9 @@ public class MainActivity extends AppCompatActivity
 
             startActivityForResult(intent, 2);
         }
+        else if (id == R.id.nav_info) {
+            showAbout();
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
@@ -235,12 +247,12 @@ public class MainActivity extends AppCompatActivity
 
             List<Note> notesList = new ArrayList<>();
 
-            for (int i = 0; i < files.length; i++) {
-                Log.d(TAG, "File: " + files[i].getName());
+            for (File file : files) {
+                Log.d(TAG, "File: " + file.getName());
 
-                Note item = new Note(files[i].getName());
+                Note item = new Note(file.getName());
 
-                item.setFileName(files[i].getName());
+                item.setFileName(file.getName());
 
                 notesList.add(item);
             }
@@ -257,6 +269,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
         Log.d(TAG, "onActivityResult()");
 
         switch (requestCode) {
@@ -270,21 +284,42 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    /*
     protected void showAbout() {
-      View messageView = getLayoutInflater().inflate(R.layout.about_view, null, false);
+        // Dialog
 
-      AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        View messageView = getLayoutInflater().inflate(R.layout.about_view, null, false);
 
-      dialog.setIcon(R.drawable.ic_launcher);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
 
-      dialog.setTitle(R.string.app_name);
+        dialogBuilder.setView(messageView);
 
-      dialog.setView(messageView);
+        AlertDialog alertDialog = dialogBuilder.create();
 
-      dialog.create();
+        // Load app version in dialog
 
-      dialog.show();
+        TextView textViewAppVersion = messageView.findViewById(R.id.text_view_app_version);
+
+        try {
+            String versionName = getApplicationContext()
+                                 .getPackageManager()
+                                 .getPackageInfo(getApplicationContext().getPackageName(), 0)
+                                 .versionName;
+
+            textViewAppVersion.setText(versionName);
+
+        }
+        catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Load app version in dialog
+
+        Button closeButton = messageView.findViewById(R.id.button_close);
+
+        closeButton.setOnClickListener(v -> {
+            alertDialog.dismiss();
+        });
+
+        alertDialog.show();
     }
-    */
 }

@@ -1,16 +1,20 @@
 package br.com.olivum.recorder.audio;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
-import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,7 +33,6 @@ import br.com.olivum.recorder.note.Note;
 /**
  * Created by allann on 8/6/17.
  */
-
 public class AudioNote {
     private static final String TAG = "AudioNote";
     private static final int RECORDER_SAMPLERATE = 16000;
@@ -94,7 +97,7 @@ public class AudioNote {
 
     public static void init() {
         if (handler == null) {
-            handler = new Handler() {
+            handler = new Handler(Looper.getMainLooper()) {
                 public void handleMessage(Message msg) {
                     Log.d(TAG, "Handler.handleMessage()");
 
@@ -162,11 +165,22 @@ public class AudioNote {
         }
 
         try {
+            if (ActivityCompat.checkSelfPermission(context.getApplicationContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+
             recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                                       RECORDER_SAMPLERATE,
-                                       RECORDER_CHANNELS,
-                                       RECORDER_AUDIO_ENCODING,
-                                       bufferElementsToRecord * bytesPerElement);
+                    RECORDER_SAMPLERATE,
+                    RECORDER_CHANNELS,
+                    RECORDER_AUDIO_ENCODING,
+                    bufferElementsToRecord * bytesPerElement);
         }
         catch (Exception e) {
             Log.e(TAG, "AudioRecorder exception : " + e.getMessage());
